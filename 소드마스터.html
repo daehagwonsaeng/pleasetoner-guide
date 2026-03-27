@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>토너를 부탁해 - 문제 해결 가이드</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#f0f4f8;min-height:100vh;color:#1a2a3a}
+
+    /* 상단 헤더 */
+    #top-bar{background:linear-gradient(135deg,#042C53 0%,#0C447C 100%);padding:18px 20px;text-align:center}
+    #top-bar h1{font-size:20px;font-weight:700;color:#fff;letter-spacing:0.03em;margin-bottom:4px}
+    #top-bar .phone{font-size:22px;font-weight:700;color:#7DD3FC;letter-spacing:0.05em;margin:6px 0}
+    #top-bar .phone a{color:#7DD3FC;text-decoration:none}
+    #top-bar .desc{font-size:12.5px;color:#B5D4F4;line-height:1.7;margin-top:8px}
+    #top-bar .desc strong{color:#fff}
+    #store-btn{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:11px 22px;background:#03C75A;color:#fff;font-size:14px;font-weight:700;border-radius:50px;text-decoration:none;letter-spacing:0.01em;transition:background .15s;box-shadow:0 2px 10px rgba(0,0,0,0.25)}
+    #store-btn:hover{background:#02a84c}
+    #store-btn svg{width:18px;height:18px;flex-shrink:0}
+
+    /* 문의 안내 카드 */
+    #contact-card{background:#EBF4FF;border:1.5px solid #378ADD;border-radius:14px;margin:16px;padding:14px 16px}
+    #contact-card .cc-title{font-size:13px;font-weight:700;color:#042C53;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+    #contact-card ol{padding-left:18px;font-size:13px;color:#185FA5;line-height:2}
+    #contact-card ol li{font-weight:500}
+    #contact-card .cc-note{font-size:12px;color:#5a6a7a;margin-top:8px;background:#fff;border-radius:8px;padding:8px 10px;border:1px solid #d0dce8}
+
+    /* 검색 */
+    #search-wrap{padding:0 16px 12px}
+    #search-input{width:100%;padding:10px 14px;border:1.5px solid #d0dce8;border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:#1a2a3a;outline:none}
+    #search-input:focus{border-color:#378ADD}
+
+    /* 카테고리 탭 */
+    #cat-tabs{display:flex;gap:6px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none}
+    #cat-tabs::-webkit-scrollbar{display:none}
+    .cat-tab{flex-shrink:0;font-size:12px;padding:6px 13px;border:1.5px solid #d0dce8;border-radius:20px;cursor:pointer;background:#fff;color:#5a6a7a;transition:all .15s;white-space:nowrap}
+    .cat-tab.active,.cat-tab:hover{background:#042C53;color:#fff;border-color:#042C53}
+
+    /* 카드 목록 */
+    #cards{padding:0 16px 24px;display:flex;flex-direction:column;gap:10px}
+
+    .guide-card{background:#fff;border:1px solid #e2eaf2;border-radius:14px;overflow:hidden;transition:border-color .15s}
+    .guide-card:hover{border-color:#378ADD}
+    .gc-header{padding:13px 15px;cursor:pointer;display:flex;align-items:flex-start;gap:10px;user-select:none}
+    .gc-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;margin-top:1px}
+    .gc-icon.c-toner{background:#E6F1FB}
+    .gc-icon.c-drum{background:#F0F9EC}
+    .gc-icon.c-imaging{background:#FFF3E0}
+    .gc-icon.c-belt{background:#F3EEFF}
+    .gc-icon.c-fuser{background:#FDECEA}
+    .gc-icon.c-feed{background:#FFF8ED}
+    .gc-icon.c-quality{background:#F0F9EC}
+    .gc-icon.c-warning{background:#FDECEA}
+    .gc-meta{flex:1}
+    .gc-title{font-size:14px;font-weight:600;color:#1a2a3a;margin-bottom:3px}
+    .gc-sub{font-size:12px;color:#7a8a9a}
+    .gc-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0;margin-top:2px}
+    .badge-high{background:#FDECEA;color:#b02020}
+    .badge-mid{background:#FFF3E0;color:#a05000}
+    .badge-low{background:#F0F9EC;color:#2a6020}
+    .badge-warn{background:#FEF9C3;color:#854d0e}
+    .gc-arrow{font-size:12px;color:#aab;margin-left:4px;transition:transform .2s;flex-shrink:0;margin-top:8px}
+    .guide-card.open .gc-arrow{transform:rotate(90deg)}
+
+    .gc-body{display:none;padding:0 15px 14px;border-top:1px solid #f0f4f8}
+    .guide-card.open .gc-body{display:block}
+
+    .gc-section{margin-top:12px}
+    .gc-section-title{font-size:12px;font-weight:700;color:#7a8a9a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px}
+    .gc-steps{display:flex;flex-direction:column;gap:6px}
+    .gc-step{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.6;color:#2a3a4a}
+    .step-num{width:22px;height:22px;border-radius:50%;background:#042C53;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+    .gc-warn-box{margin-top:10px;background:#FEF9C3;border:1px solid #f59e0b;border-radius:9px;padding:10px 12px;font-size:12.5px;color:#78350f;line-height:1.7}
+    .gc-warn-box .warn-title{font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+    .gc-info-box{margin-top:10px;background:#EBF4FF;border:1px solid #93c5fd;border-radius:9px;padding:10px 12px;font-size:12.5px;color:#1e3a5f;line-height:1.7}
+    .gc-ok-box{margin-top:10px;background:#F0F9EC;border:1px solid #86efac;border-radius:9px;padding:10px 12px;font-size:12.5px;color:#14532d;line-height:1.7}
+    .gc-divider{height:1px;background:#f0f4f8;margin:10px 0}
+
+    .no-result{text-align:center;padding:40px 20px;color:#8a9aaa;font-size:14px}
+
+    /* 호환 토너 표 */
+    #compat-section{padding:0 16px 24px}
+    #compat-section h2{font-size:15px;font-weight:700;color:#1a2a3a;margin-bottom:10px}
+    .compat-card{background:#fff;border:1px solid #e2eaf2;border-radius:12px;margin-bottom:10px;overflow:hidden}
+    .compat-header{padding:10px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;background:#f7f9fc;border-bottom:1px solid #e2eaf2}
+    .brand-badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:6px}
+    .badge-samsung{background:#E6F1FB;color:#185FA5}
+    .badge-hp{background:#FFF3E0;color:#a05000}
+    .badge-canon{background:#FDECEA;color:#b02020}
+    .badge-brother{background:#F0F9EC;color:#2a6020}
+    .badge-sindoh{background:#FFF8ED;color:#7a4a00}
+    .badge-fuji{background:#F3EEFF;color:#5a30b5}
+    .compat-title{font-size:13px;font-weight:600;color:#1a2a3a;flex:1}
+    .compat-body{display:none}
+    .compat-card.open .compat-body{display:block}
+    .compat-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 14px;border-bottom:1px solid #f5f7fa;font-size:12.5px}
+    .compat-row:last-child{border-bottom:none}
+    .compat-model{color:#1a2a3a;font-weight:500;flex:1;padding-right:10px}
+    .compat-toner{color:#185FA5;font-size:12px;text-align:right;flex-shrink:0}
+
+    footer{text-align:center;padding:16px;font-size:11.5px;color:#8a9aaa;background:#fff;border-top:1px solid #e2eaf2}
+    footer a{color:#185FA5;text-decoration:none}
+  </style>
+</head>
+<body>
+
+<!-- 상단 헤더 -->
+<div id="top-bar">
+  <h1>🖨️ 토너를 부탁해</h1>
+  <div class="phone"><a href="tel:07040257333">070-4025-7333</a></div>
+  <div class="desc">
+    빠른 상담을 원하신다면 아래 내용을 문자로 남겨주세요!<br>
+    <strong>1. 사용하시는 프린터기 모델명</strong><br>
+    <strong>2. 구매하신 토너&amp;잉크 이름</strong><br>
+    <strong>3. 발생하는 문제</strong><br>
+    남겨주시면 더 빠른 답변이 가능합니다 😊
+  </div>
+  <a id="store-btn" href="https://smartstore.naver.com/jy9109" target="_blank">
+    <svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="50" height="50" rx="12" fill="#03C75A"/>
+      <text x="50%" y="57%" dominant-baseline="middle" text-anchor="middle" font-size="26" font-weight="900" fill="white" font-family="Arial">N</text>
+    </svg>
+    네이버 스마트스토어 바로가기
+  </a>
+</div>
+
+<!-- 문의 안내 카드 -->
+<div id="contact-card">
+  <div class="cc-title">📋 문의 시 꼭 알려주세요!</div>
+  <ol>
+    <li>사용 중인 프린터기 모델명</li>
+    <li>구매하신 토너 &amp; 잉크 이름</li>
+    <li>발생하는 문제 증상</li>
+  </ol>
+  <div class="cc-note">⚠️ 저희는 재생 토너·잉크 판매 전문점입니다. 프린터 하드웨어 수리 및 A/S는 제조사 공식 서비스센터를 이용해 주세요.</div>
+</div>
+
+<!-- 검색 -->
+<div id="search-wrap">
+  <input id="search-input" type="text" placeholder="🔍  증상이나 부품명을 검색하세요 (예: 흐린 인쇄, 드럼, 줄무늬)" oninput="filterCards()">
+</div>
+
+<!-- 카테고리 탭 -->
+<div id="cat-tabs">
+  <div class="cat-tab active" onclick="filterCat('all',this)">전체</div>
+  <div class="cat-tab" onclick="filterCat('toner',this)">🖨️ 토너 문제</div>
+  <div class="cat-tab" onclick="filterCat('drum',this)">🥁 드럼</div>
+  <div class="cat-tab" onclick="filterCat('imaging',this)">📦 이미징유닛</div>
+  <div class="cat-tab" onclick="filterCat('belt',this)">🔄 전사벨트</div>
+  <div class="cat-tab" onclick="filterCat('fuser',this)">🌡️ 정착기</div>
+  <div class="cat-tab" onclick="filterCat('feed',this)">📄 용지 문제</div>
+  <div class="cat-tab" onclick="filterCat('quality',this)">🖼️ 인쇄 품질</div>
+</div>
+
+<!-- 가이드 카드 목록 -->
+<div id="cards">
+
+  <!-- 토너 인식 안됨 -->
+  <div class="guide-card" data-cat="toner" data-keywords="토너 인식 안됨 칩 미인식 비정품 경고 재생">
+    <div class="gc-header" onclick="toggleCard(this)">
+      <div class="gc-icon c-toner">🖨️</div>
+      <div class="gc-meta">
+        <div class="gc-title">재생 토너 인식 안됨 / 비정품 경고</div>
+        <div class="gc-sub">토너 칩 인식 오류 · 재생 토너 특이사항</div>
+      </div>
+      <div class="gc-badge badge-high">긴급</div>
+      <div class="gc-arrow">▶</div>
+    </div>
+    <div class="gc-body">
+      <div class="gc-section">
+        <div class="gc-section-title">원인</div>
+        <div class="gc-info-box">재생 토너는 칩을 리셋하거나 새 칩으로 교체해 출시됩니다. 칩 단자 오염, 장착 불량, 칩 불량 등으로 인식 오류가 발생할 수 있습니다.</div>
+      </div>
+      <div class="gc-section">
+        <div class="gc-section-title">해결 순서</div>
+        <div class="gc-steps">
+          <div class="gc-step"><div class="step-num">1</div><div>토너 카트리지를 꺼내 <strong>칩 금속 단자 부분을 마른 천이나 지우개</strong>로 가볍게 닦아주세요</div></div>
+          <div class="gc-step"><div class="step-num">2</div><div>토너를 다시 장착하고 <strong>프린터 전원을 완전히 껐다가</strong> 30초 후 다시 켜주세요</div></div>
+          <div class="gc-step"><div class="step-num">3</div><div>일부 프린터는 <strong>"비정품 토너 계속 사용"</strong> 버튼을 눌러 강제 진행이 가능합니다</div></div>
+          <div class="gc-step"><div class="step-num">4</div><div>위 방법으로 해결 안 될 경우 <strong>칩 불량</strong>일 수 있습니다 → 070-4025-7333 문의</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 흐린 인쇄 -->
+  <div class="guide-card" data-cat="quality toner" data-keywords="흐림 인쇄 연하다 농도 희미 연한 글씨">
+    <div class="gc-header" onclick="toggleCard(this)">
+      <div class="gc-icon c-toner">🌫️</div>
+      <div class="gc-meta">
+        <div class="gc-title">인쇄가 흐리거나 연하게 나와요</div>
+        <div class="gc-sub">토너 잔량 부족 · 현상롤러 오염 · 농도 설정</div>
+      </div>
+      <div class="gc-badge badge-mid">주의</div>
+      <div class="gc-arrow">▶</div>
+    </div>
+    <div class="gc-body">
+      <div class="gc-section">
+        <div class="gc-section-title">해결 순서</div>
+        <div class="gc-steps">
+          <div class="gc-step"><div class="step-num">1</div><div>토너 카트리지를 꺼내 <strong>좌우로 5~10회 가볍게 흔들어</strong> 토너 가루를 고르게 분산 후 재장착하세요</div></div>
+          <div class="gc-step"><div class="step-num">2</div><div>프린터 설정 → <strong>인쇄 농도(Density)를 한 단계 높여</strong> 테스트 출력하세요</div></div>
+          <div class="gc-step"><div class="step-num">3</div><div>절약 모드(Eco/Toner Save)가 켜져 있다면 <strong>절약 모드를 꺼주세요</strong></div></div>
+          <div class="gc-step"><div class="step-num">4</div><div>위 방법 후에도 흐리면 <strong>토너 잔량 부족</strong>입니다 → 재생 토너 교체 필요</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 세로 줄무늬·반복 얼룩 -->
+  <div class="guide-card" data-cat="quality drum" data-keywords="줄무늬 세로줄 얼룩 반복 스크래치 드럼">
+    <div class="gc-header" onclick="toggleCard(this)">
+      <div class="gc-icon c-drum">📏</div>
+      <div class="gc-meta">
+        <div class="gc-title">세로 줄무늬 / 일정 간격 반복 얼룩</div>
+        <div class="gc-sub">드럼 손상 · 현상롤러 오염</div>
+      </div>
+      <div class="gc-badge badge-mid">주의</div>
+      <div class="gc-arrow">▶</div>
+    </div>
+    <div class="gc-body">
+      <div class="gc-section">
+        <div class="gc-section-title">원인 파악</div>
+        <div class="gc-info-box">
+          <strong>줄무늬 간격으로 원인을 구분할 수 있습니다</strong><br>
+          • 약 94mm 간격 반복 → 드럼(OPC) 손상 또는 오염<br>
+          • 약 40mm 간격 반복 → 현상롤러 오염<br>
+          • 불규칙 세로줄 → 클리닝 블레이드 손상
+        </div>
+      </div>
+      <div class="gc-section">
+        <div class="gc-section-title">해결 순서</div>
+        <div class="gc-steps">
+          <div class="gc-step"><div class="step-num">1</div><div>토너를 꺼내 <strong>현상롤러 표면을 마른 천으로 가볍게 닦아</strong> 주세요 (오염물 제거)</div></div>
+          <div class="gc-step"><div class="step-num">2</div><div><strong>드럼 표면은 절대 손으로 만지지 마세요</strong> — 지문이 닿으면 감광층이 영구 손상됩니다</div></div>
+          <div class="gc-step"><div class="step-num">3</div><div>드럼을 직사광선·형광등에 장시간 노출하지 마세요 (5분 이상 노출 시 손상)</div></div>
+          <div class="gc-step"><div class="step-num">4</div><div>위 방법으로 개선되지 않으면 <strong>드럼 또는 이미징유닛 교체</strong> 필요 → 070-4025-7333 문의</div></div>
+        </div>
+      </div>
+      <div class="gc-warn-box">
+        <div class="warn-title">⚠️ 드럼 주의사항</div>
+        드럼(OPC)은 빛에 매우 민감한 감광체입니다. 교체·점검 시 반드시 빛이 없는 곳에서 빠르게 작업하세요.
+      </div>
+    </div>
+  </div>
+
+  <!-- 드럼 교체 시 손잡이 주의 -->
+  <div class="guide-card" data-cat="drum" data-keywords="드럼 교체 손잡이 파란 핸들 부러짐 교체방법">
+    <div class="gc-header" onclick="toggleCard(this)">
+      <div class="gc-icon c-drum">🥁</div>
+      <div class="gc-meta">
+        <div class="gc-title">드럼 교체 방법 및 손잡이 파손 주의</div>
+        <div class="gc-sub">드럼 교체 절차 · 손잡이 제거 주의사항</div>
+      </div>
+      <div class="gc-badge badge-warn">⚠️ 주의</div>
+      <div class="gc-arrow">▶</div>
+    </div>
+    <div class="gc-body">
+      <div class="gc-warn-box">
+        <div class="warn-title">⚠️ 가장 중요! 손잡이(핸들) 파손 주의</div>
+        새 드럼 양쪽에는 <strong>파란색(또는 주황색) 보호 손잡이</strong>가 장착되어 있습니다.<br>
+        이 손잡이를 제거할 때 <strong>무리하게 힘을 주거나 비틀면 손잡이가 부러져</strong> 드럼 내부에 파편이 남을 수 있습니다.<br><br>
+        <strong>올바른 제거 방법:</strong><br>
+        손잡이를 <strong>드럼 축 방향(바깥쪽)으로 수평으로 당기듯</strong> 살살 빼주세요. 절대 위아래로 꺾지 마세요.
+      </div>
+      <div class="gc-section">
+        <div class="gc-section-title">드럼 교체 순서</div>
+        <div class="gc-steps">
+          <div class="gc-step"><div class="step-num">1</div><div>프린터 전원을 끄고 전면 커버를 여세요</div></div>
+          <div class="gc-step"><div class="step-num">2</div><div>기존 토너 카트리지를 먼저 꺼내세요 (드럼과 함께 나오는 경우도 있음)</div></div>
+          <div class="gc-step"><div class="step-num">3</div><div>드럼 유닛을 앞으로 당겨 분리하세요</div></div>
+          <div class="gc-step"><div class="step-num">4</div><div>새 드럼 포장을 열고 <strong>보호 테이프와 양쪽 손잡이를 제거</strong>하세요 — 손잡이는 수평으로 천천히!</div></div>
+          <div class="gc-step"><div class="step-num">5</div><div><strong>드럼 표면(녹색 또는 파란 원통)에 손대지 말고</strong> 측면 프레임만 잡으세요</div></div>
+          <div class="gc-step"><div class="step-num">6</div><div>드럼을 프린터에 장착하고 커버를 닫은 후 전원을 켜세요</div></div>
+          <div class="gc-step"><div class="step-num">7</div><div>프린터에서 <strong>드럼 카운터 리셋</strong> (모델마다 다름 — 문의 주시면 안내드립니다)</div></div>
+        </div>
+      </div>
+      <div class="gc-warn-box">
+        <div class="warn-title">⚠️ 손잡이가 부러졌을 때 해결 방법</div>
+        1. 당황하지 말고 프린터를 켜지 마세요<br>
+        2. 핀셋이나 테이프로 파편 조각을 모두 제거하세요<br>
+        3. 조각이 남아 있으면 프린터 내부를 손상시킬 수 있습니다<br>
+        4. 파편 제거가 어렵다면 → <strong>070-4025-7333 문의</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- 이미징유닛 -->
+  <div class="guide-card" data-cat="imaging" data-keywords="이미징유닛 IU 교체 알림 브라더 신도리코 카운터 리셋">
+    <div class="gc-header" onclick="toggleCard(this)">
+      <div class="gc-icon c-imaging">📦</div>
+      <div class="gc-meta">
+        <div class="gc-title">이미징유닛(IU) 교체 알림 / 오류</div>
+        <div class="gc-sub">브라더·신도리코 등 일체형 드럼+현상기</div>
+      </div>
+      <div class="gc-badge badge-high">긴급</div>
+      <div class="gc-arrow">▶</div>
+    </div>
+    <div class="gc-body">
+      <div class="gc-section">
+        <div class="gc-section-title">이미징유닛이란?</div>
+        <div class="gc-info-box">이미징유닛(IU)은 드럼 + 현상롤러가 하나로 합쳐진 부품입니다. 주로 <strong>브라더, 신도리코, 코니카미놀타, OKI</strong> 프린터에서 사용됩니다. 토너와 별도로 교체하며, 수명은 보통 12,000~30,000매입니다.</div>
+      </div>
+      <div class="gc-section">
+        <div class="gc-section-title">해결 순서</div>
+        <div class="gc-steps">
+          <div class="gc-step"><div class="step-num">1</div><div>이미징유닛을 꺼낼 때 <strong>반드시 빛을 차단</strong>하세요 — 직사광선에 5분 이상 노출 시 드럼 영구 손상</div></div>
+          <div class="gc-step"><div class="step-num">2</div><div>이미징유닛을 재장착하고 프린터 전원을 재시작하세요</div></div>
+          <div class="gc-step"><div class="step-num">3</div><div>재생 이미징유닛 사용 시 <strong>카운터 리셋</strong>이 필요할 수 있습니다 (모델별 방법 상이)</div></div>
+          <div class="gc-step"><div class="step-num">4</div><div>수명 초과 시 이미징유닛 교체 → <strong>070-4025-7333 문의</strong></div></div>
+        </div>
+      </div>
+      <div class="gc-warn-box">
+        <div class="warn-title">⚠️ 교체 시 주의</div>
+        이미징유닛의 드럼 표면(녹색 원통)을 손으로 만지지 마세요. 지문·기름이 묻으면 줄무늬 원인이 됩니다.
+      </div>
+    </div>
+  </div>
+
+  <!-- 전사벨트 -->
+  <div class="guide-card" data-cat="belt" data-keywords="전사벨트 ITB 컬러 색상 어긋남 번짐 벨트 교체">
+    <div class="gc-header" onclick="toggleCard(this)">
+      <div class="gc-icon c-belt">🔄</div>
+      <div class="gc-meta">
+        <div class="gc-title">전사벨트(ITB) 오류 / 컬러 색상 어긋남</div>
+        <div class="gc-sub">컬러 레이저 프린터 전용 부품</div>
+      </div>
+      <div class="gc-badge badge-high">긴급</div>
+      <div class="gc-arrow">▶</div>
+    </div>
+    <div class="gc-body">
+      <div class="gc-section">
+        <div class="gc-section-title">전사벨트란?</div>
+        <div class="gc-info-box">전사벨트(ITB: Intermediate Transfer Belt)는 <strong>컬러 레이저 프린터 전용</strong> 부품으로, CMYK 4색 토너 이미지를 순서대로 받아 한 번에 용지에 전사하는 역할을 합니다. 벨트 손상 시 색상 어긋남, 가로 줄무늬가 발생합니다.</div>
+      </div>
+      <div class="gc-section">
+        <div class="gc-section-title">증상별 원인</div>
+        <div class="gc-info-box">
+          • 가로 줄무늬 → 벨트 표면 오염 또는 스크래치<br>
+          • 컬러 미스레지스트 (색상 어긋남) → 벨트 마모 또는 롤러 이탈<br>
+          • "벨트 교체" 메시지 → 수명(약 50,000매) 초과
+        </div>
+      </div>
+      <div class="gc-section">
+        <div class="gc-section-title">해결 방법</div>
+        <div class="gc-steps">
+          <div class="gc-step"><div class="step-num">1</div><div>벨트 표면에 <strong>토너 오염이 있으면 마른 천으로 가볍게</strong> 닦아주세요 (물·알코올 금지)</div></div>
+          <div class="gc-step"><div class="step-num">2</div><div>전사롤러 접촉 상태를 확인하고 이탈된 경우 재조립하세요</div></div>
+          <div class="gc-step"><div class="step-num">3</div><div>벨트 손상·수명 초과 시 교체 필요 → 하드웨어 수리는 제조사 A/S센터 이용</div></div>
+        </div>
+      </div>
+      <div class="gc-warn-box">
+        <div class="warn-title">⚠️ 주의</div>
+        전사벨트는 얇고 예민한 필름 소재입니다. 날카로운 물체나 손톱으로 긁히지 않도록 주의하세요.
+      </div>
+    </div>
+  </div>
+
+  <!-- 정착기 번짐 -->
+  <div class="guide-card" data-cat="fuser" data-keywords="정착기 퓨저 번짐 손에묻음 토너 안붙음 벗겨짐 용지">
+    <div class="gc-header" onclick="toggleCard(this)">
+      <div class="gc-icon c-fuser">🌡️</div>
+      <div class="gc-meta">
+        <div class="gc-title">인쇄물 번짐 / 토너가 손에 묻어요</div>
+        <div class="gc-sub">정착기(퓨저) 온도 문제 · 용지 설정 불일치</div>
+      </div>
+      <div class="gc-badge badge-high">긴급</div>
+      <div class="gc-arrow">▶</div>
+    </div>
+    <div class="gc-body">
+      <div class="gc-section">
+        <div class="gc-section-title">원인</div>
+        <div class="gc-info-box">정착기(Fuser)는 열(170~220°C)과 압력으로 토너를 용지에 고정합니다. 용지 종류 설정이 잘못되거나 정착기 온도가 낮으면 토너가 제대로 붙지 않아 번짐이 발생합니다.</div>
+      </div>
+      <div class="gc-section">
+        <div class="gc-section-title">해결 순서</div>
+        <div class="gc-steps">
+          <div class="gc-step"><div class="step-num">1</div><div>프린터 드라이버 → 용지 종류를 <strong>실제 사용 중인 용지와 동일하게</strong> 설정하세요 (두꺼운 용지 선택 시 온도 높아짐)</div></div>
+          <div class="gc-step"><div class="step-num">2</div><div>일반 복사용지(75~80g) 사용 중인지 확인하세요. <strong>너무 얇거나 코팅 용지</strong>는 번짐 원인이 됩니다</div></div>
+          <div class="gc-step"><div class="step-num">3</div><div>정착기 오류 코드가 뜨면 <strong>즉시 전원을 끄세요</strong> — 고온 부품이라 화상 위험 있음</div></div>
+          <div class="gc-step"><div class="step-num">4</div><div>정착기 수리·교체는 저희 업무 범위 외입니다 → <strong>제조사 공식 A/S센터 이용</strong></div></div>
+        </div>
+      </div>
+      <div class="gc-warn-box">
+        <div class="warn-title">⚠️ 절대 분해하지 마세요</div>
+        정착기 내부는 200°C 이상의 고온입니다. 임의 분해 시 화상 및 프린터 영구 손상의 위험이 있습니다.
+      </div>
+    </div>
+  </div>
+
+  <!-- 폐토너통 -->
+  <div class="guide-card" data-cat="toner" data-keywords="폐토너통 폐토너 가득참 교체 waste toner">
+    <div class="gc-header" onclick="toggleCard(this)">
+      <div class="gc-icon c-toner">🗑️</div>
+      <div class="gc-meta">
+        <div class="gc-title">폐토너통 가득 참 / 교체 알림</div>
+        <div class="gc-sub">폐토너 수거함 교체 방법</div>
+      </div>
+      <div class="gc-badge badge-mid">주의</div>
+      <div class="gc-arrow">▶</div>
+    </div>
+    <div class="gc-body">
+      <div class="gc-section">
+        <div class="gc-section-title">교체 순서</div>
+        <div class="gc-steps">
+          <div class="gc-step"><div class="step-num">1</div><div>프린터 커버를 열고 폐토너통 위치를 확인하세요 (보통 전면 하단 또는 측면)</div></div>
+          <div class="gc-step"><div class="step-num">2</div><div>폐토너통을 <strong>수평으로 천천히</strong> 분리하세요 — 기울이면 토너 가루가 흘러나옵니다</div></div>
+          <div class="gc-step"><div class="step-num">3</div><div>새 폐토너통을 장착하고 <strong>딸깍 소리</strong>가 날 때까지 밀어 넣으세요</div></div>
+          <div class="gc-step"><div class="step-num">4</div><div>커버를 닫으면 자동으로 카운터가 초기화됩니다</div></div>
+        </div>
+      </div>
+      <div class="gc-ok-box">💡 재생 폐토너통 구매 문의: <strong>070-4025-7333</strong></div>
+    </div>
+  </div>
+
+  <!-- 용지 걸림 -->
+  <div class="guide-card" data-cat="feed" data-keywords="용지 걸림 paper jam 급지 불량 복수 급지 두장 롤러">
+    <div class="gc-header" onclick="toggleCard(this)">
+      <div class="gc-icon c-feed">📄</div>
+      <div class="gc-meta">
+        <div class="gc-title">용지 걸림 / 급지 불량</div>
+        <div class="gc-sub">Paper Jam · 여러 장 한 번에 급지</div>
+      </div>
+      <div class="gc-badge badge-mid">주의</div>
+      <div class="gc-arrow">▶</div>
+    </div>
+    <div class="gc-body">
+      <div class="gc-section">
+        <div class="gc-section-title">해결 순서</div>
+        <div class="gc-steps">
+          <div class="gc-step"><div class="step-num">1</div><div><strong>프린터 전원을 끄세요</strong> — 전원이 켜진 상태에서 용지를 억지로 빼면 롤러 손상 위험</div></div>
+          <div class="gc-step"><div class="step-num">2</div><div>앞면 커버, 후면 덮개를 순서대로 열어 <strong>걸린 용지를 천천히 직선으로</strong> 당겨 제거하세요</div></div>
+          <div class="gc-step"><div class="step-num">3</div><div>용지가 찢어진 경우 <strong>작은 조각도 남기지 말고</strong> 모두 제거하세요</div></div>
+          <div class="gc-step"><div class="step-num">4</div><div>용지함에 용지를 <strong>가이드에 맞춰 가지런히</strong> 정렬 후 재장착하세요</div></div>
+          <div class="gc-step"><div class="step-num">5</div><div>반복 발생 시 급지롤러 마모 → <strong>제조사 A/S센터 문의</strong></div></div>
+        </div>
+      </div>
+      <div class="gc-info-box">
+        <strong>여러 장이 한 번에 들어가는 경우</strong><br>
+        용지가 습기를 먹었거나 정전기로 달라붙은 경우입니다. 용지를 한 번 부채처럼 펼쳤다가 모아서 다시 넣어보세요.
+      </div>
+    </div>
+  </div>
+
+  <!-- 잔상(고스팅) -->
+  <div class="guide-card" data-cat="quality drum" data-keywords="잔상 고스팅 ghosting 배경 오염 이전 인쇄 보임 회색">
+    <div class="gc-header" onclick="toggleCard(this)">
+      <div class="gc-icon c-quality">👻</div>
+      <div class="gc-meta">
+        <div class="gc-title">잔상(고스팅) / 이전 인쇄 내용이 보여요</div>
+        <div class="gc-sub">클리닝 블레이드 마모 · 드럼 잔류 토너</div>
+      </div>
+      <div class="gc-badge badge-mid">주의</div>
+      <div class="gc-arrow">▶</div>
+    </div>
+    <div class="gc-body">
+      <div class="gc-section">
+        <div class="gc-section-title">원인</div>
+        <div class="gc-info-box">클리닝 블레이드가 드럼 표면의 잔류 토너를 완전히 제거하지 못할 때 발생합니다. 재생 토너 입자 크기 차이나 클리닝 블레이드 마모가 원인입니다.</div>
+      </div>
+      <div class="gc-section">
+        <div class="gc-section-title">해결 순서</div>
+        <div class="gc-steps">
+          <div class="gc-step"><div class="step-num">1</div><div>프린터 메뉴에서 <strong>클리닝 페이지 출력</strong> 기능을 실행해보세요 (대부분의 레이저 프린터 지원)</div></div>
+          <div class="gc-step"><div class="step-num">2</div><div>클리닝 페이지 출력으로 해결 안 되면 <strong>토너 또는 이미징유닛 교체</strong>를 권장합니다</div></div>
+          <div class="gc-step"><div class="step-num">3</div><div>재생 토너 교체 후에도 지속되면 드럼 수명 초과 가능성 → 070-4025-7333 문의</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 배경 오염 (회색 배경) -->
+  <div class="guide-card" data-cat="quality toner" data-keywords="배경 오염 회색 배경 background 지저분 번짐 전체">
+    <div class="gc-header" onclick="toggleCard(this)">
+      <div class="gc-icon c-quality">🌫️</div>
+      <div class="gc-meta">
+        <div class="gc-title">전체적으로 배경이 회색·오염됩니다</div>
+        <div class="gc-sub">토너 누출 · 드럼 전하 불량</div>
+      </div>
+      <div class="gc-badge badge-mid">주의</div>
+      <div class="gc-arrow">▶</div>
+    </div>
+    <div class="gc-body">
+      <div class="gc-section">
+        <div class="gc-section-title">해결 순서</div>
+        <div class="gc-steps">
+          <div class="gc-step"><div class="step-num">1</div><div>토너 카트리지를 꺼내 <strong>토너 가루가 새는 부분이 있는지</strong> 확인하세요</div></div>
+          <div class="gc-step"><div class="step-num">2</div><div>토너 누출이 있으면 <strong>새 토너로 교체</strong> → 070-4025-7333 문의</div></div>
+          <div class="gc-step"><div class="step-num">3</div><div>토너 이상 없이 배경 오염이 지속되면 드럼 전하롤러(대전롤러) 마모 → 제조사 A/S센터 문의</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 무결과 메시지 -->
+  <div class="no-result" id="no-result" style="display:none">
+    검색 결과가 없습니다.<br>다른 키워드로 검색하거나 <strong>070-4025-7333</strong>으로 문의해 주세요.
+  </div>
+</div>
+
+<!-- 호환 토너 표 -->
+<div id="compat-section">
+  <h2>📋 프린터 모델별 호환 재생토너</h2>
+
+  <div class="compat-card" onclick="toggleCompat(this)">
+    <div class="compat-header"><span class="brand-badge badge-samsung">삼성 흑백</span><span class="compat-title">Samsung 흑백 레이저</span><span style="font-size:12px;color:#aab">▶</span></div>
+    <div class="compat-body">
+      <div class="compat-row"><span class="compat-model">SL-M2020/M2022/M2024/M2070/M2071/M2074/M2077/M2079</span><span class="compat-toner">MLT-D111S</span></div>
+      <div class="compat-row"><span class="compat-model">SL-M2030/M2033/M2035/M2080/M2083/M2085</span><span class="compat-toner">MLT-K200S/L</span></div>
+      <div class="compat-row"><span class="compat-model">SL-M2620/M2820/M2670/M2830/M2870/M2880/M2625/M2825</span><span class="compat-toner">MLT-D115L</span></div>
+      <div class="compat-row"><span class="compat-model">SL-M2630/M2840/M2893</span><span class="compat-toner">MLT-K250S/L</span></div>
+      <div class="compat-row"><span class="compat-model">SL-M3320/M3820/M3870/M4020/M4070/M4080</span><span class="compat-toner">MLT-D203S/L/E</span></div>
+      <div class="compat-row"><span class="compat-model">ML-2160/ML-2165/SCX-3400/SCX-3405</span><span class="compat-toner">MLT-D101S</span></div>
+      <div class="compat-row"><span class="compat-model">ML-1640/ML-2240</span><span class="compat-toner">MLT-D108S</span></div>
+    </div>
+  </div>
+
+  <div class="compat-card" onclick="toggleCompat(this)">
+    <div class="compat-header"><span class="brand-badge badge-samsung">삼성 컬러</span><span class="compat-title">Samsung 컬러 레이저</span><span style="font-size:12px;color:#aab">▶</span></div>
+    <div class="compat-body">
+      <div class="compat-row"><span class="compat-model">SL-C430/C432/C433/C480/C483/C485/C486</span><span class="compat-toner">CLT-K403S (4색)</span></div>
+      <div class="compat-row"><span class="compat-model">SL-C510/C513/C515/C563/C565</span><span class="compat-toner">CLT-K515S (4색)</span></div>
+      <div class="compat-row"><span class="compat-model">CLP-360/CLP-365/CLX-3300/CLX-3305/SL-C410/C460</span><span class="compat-toner">CLT-K406S (4색)</span></div>
+      <div class="compat-row"><span class="compat-model">CLP-300/CLX-2160/CLX-3160</span><span class="compat-toner">CLP-300A (4색)</span></div>
+    </div>
+  </div>
+
+  <div class="compat-card" onclick="toggleCompat(this)">
+    <div class="compat-header"><span class="brand-badge badge-hp">HP 흑백</span><span class="compat-title">HP LaserJet 흑백</span><span style="font-size:12px;color:#aab">▶</span></div>
+    <div class="compat-body">
+      <div class="compat-row"><span class="compat-model">P1102/P1102W/M1132/M1210/M1212/M1217</span><span class="compat-toner">CE285A (85A)</span></div>
+      <div class="compat-row"><span class="compat-model">M12a/M12w/M26a/M26nw</span><span class="compat-toner">CF279A (79A)</span></div>
+      <div class="compat-row"><span class="compat-model">M102a/M102w/M130a/M130fw/M130nw</span><span class="compat-toner">CF217A (17A)</span></div>
+      <div class="compat-row"><span class="compat-model">M203/M227/M230</span><span class="compat-toner">CF230A/X (30A/30X)</span></div>
+      <div class="compat-row"><span class="compat-model">M404/M428</span><span class="compat-toner">CF258A/X (58A/58X)</span></div>
+      <div class="compat-row"><span class="compat-model">107a/107w/135a/135w/137fnw</span><span class="compat-toner">W1106A (106A)</span></div>
+      <div class="compat-row"><span class="compat-model">P3015/P3015DN</span><span class="compat-toner">CE255A/X (55A/55X)</span></div>
+    </div>
+  </div>
+
+  <div class="compat-card" onclick="toggleCompat(this)">
+    <div class="compat-header"><span class="brand-badge badge-hp">HP 컬러</span><span class="compat-title">HP Color LaserJet</span><span style="font-size:12px;color:#aab">▶</span></div>
+    <div class="compat-body">
+      <div class="compat-row"><span class="compat-model">M252/M274/M277</span><span class="compat-toner">CF400A (201A, 4색)</span></div>
+      <div class="compat-row"><span class="compat-model">M254/M280/M281</span><span class="compat-toner">CF540A (203A, 4색)</span></div>
+      <div class="compat-row"><span class="compat-model">M454/M479</span><span class="compat-toner">W2010A (415A, 4색)</span></div>
+    </div>
+  </div>
+
+  <div class="compat-card" onclick="toggleCompat(this)">
+    <div class="compat-header"><span class="brand-badge badge-canon">캐논 흑백</span><span class="compat-title">Canon 흑백 레이저</span><span style="font-size:12px;color:#aab">▶</span></div>
+    <div class="compat-body">
+      <div class="compat-row"><span class="compat-model">LBP6030/LBP6033/MF3010</span><span class="compat-toner">CRG-325/326/328</span></div>
+      <div class="compat-row"><span class="compat-model">LBP6230/LBP6240/MF4410~MF4580</span><span class="compat-toner">CRG-326/728</span></div>
+      <div class="compat-row"><span class="compat-model">LBP151dw/MF264dw/MF267dw/MF269dw</span><span class="compat-toner">CRG-051/051H</span></div>
+      <div class="compat-row"><span class="compat-model">LBP223dw/LBP226dw/MF441dw~MF446x</span><span class="compat-toner">CRG-057/057H</span></div>
+      <div class="compat-row"><span class="compat-model">MF215/MF217w~MF249dw</span><span class="compat-toner">CRG-337/337H</span></div>
+      <div class="compat-row"><span class="compat-model">MF5880/MF5980/MF6180</span><span class="compat-toner">CRG-719/719H</span></div>
+    </div>
+  </div>
+
+  <div class="compat-card" onclick="toggleCompat(this)">
+    <div class="compat-header"><span class="brand-badge badge-canon">캐논 컬러</span><span class="compat-title">Canon 컬러 레이저</span><span style="font-size:12px;color:#aab">▶</span></div>
+    <div class="compat-body">
+      <div class="compat-row"><span class="compat-model">LBP611Cn/LBP612Cdw/MF632Cdw/MF634Cdw</span><span class="compat-toner">CRG-045 (4색)</span></div>
+      <div class="compat-row"><span class="compat-model">LBP621Cw/LBP623Cdw/MF641Cw~MF645Cx</span><span class="compat-toner">CRG-054 (4색)</span></div>
+      <div class="compat-row"><span class="compat-model">LBP664Cx/LBP663Cdw/MF742Cdw~MF746Cx</span><span class="compat-toner">CRG-069 (4색)</span></div>
+    </div>
+  </div>
+
+  <div class="compat-card" onclick="toggleCompat(this)">
+    <div class="compat-header"><span class="brand-badge badge-brother">브라더</span><span class="compat-title">Brother 레이저</span><span style="font-size:12px;color:#aab">▶</span></div>
+    <div class="compat-body">
+      <div class="compat-row"><span class="compat-model">HL-1110/HL-1112/DCP-1510/MFC-1810/MFC-1815</span><span class="compat-toner">TN-1000 (IU: DR-1000)</span></div>
+      <div class="compat-row"><span class="compat-model">HL-L2300D/L2340DW/MFC-L2700DW/L2720DW</span><span class="compat-toner">TN-2360/TN-2380</span></div>
+      <div class="compat-row"><span class="compat-model">HL-L2350DW/L2370DW/MFC-L2710DW/L2750DW</span><span class="compat-toner">TN-2480/TN-2460</span></div>
+      <div class="compat-row"><span class="compat-model">HL-L5100DN/L5200DW/MFC-L5700DN/L6700DW</span><span class="compat-toner">TN-3498/TN-3458</span></div>
+      <div class="compat-row"><span class="compat-model">HL-L8260CDW/MFC-L8690CDW/L8900CDW</span><span class="compat-toner">TN-459 (4색 대용량)</span></div>
+    </div>
+  </div>
+
+  <div class="compat-card" onclick="toggleCompat(this)">
+    <div class="compat-header"><span class="brand-badge badge-sindoh">신도리코</span><span class="compat-title">신도리코 / 후지제록스</span><span style="font-size:12px;color:#aab">▶</span></div>
+    <div class="compat-body">
+      <div class="compat-row"><span class="compat-model">N410/N411</span><span class="compat-toner">N410T20K</span></div>
+      <div class="compat-row"><span class="compat-model">D310/D312/D313</span><span class="compat-toner">D310T8K</span></div>
+      <div class="compat-row"><span class="compat-model">DocuPrint P215b/M215b/M215fw</span><span class="compat-toner">CT201610</span></div>
+      <div class="compat-row"><span class="compat-model">DocuPrint M225dw/M265z</span><span class="compat-toner">CT202330</span></div>
+      <div class="compat-row"><span class="compat-model">DocuPrint P285dw/M285z</span><span class="compat-toner">CT203110</span></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  토너를 부탁해 · 재생 토너·잉크 전문 판매<br>
+  📞 <a href="tel:07040257333">070-4025-7333</a> · 프린터 A/S는 제조사 서비스센터를 이용해 주세요
+</footer>
+
+<script>
+  function toggleCard(header){
+    const card=header.closest('.guide-card');
+    card.classList.toggle('open');
+  }
+  function toggleCompat(card){
+    card.classList.toggle('open');
+  }
+
+  let currentCat='all';
+  function filterCat(cat,el){
+    currentCat=cat;
+    document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');
+    filterCards();
+  }
+
+  function filterCards(){
+    const q=document.getElementById('search-input').value.trim().toLowerCase();
+    const cards=document.querySelectorAll('.guide-card');
+    let visible=0;
+    cards.forEach(card=>{
+      const cats=card.dataset.cat||'';
+      const keys=card.dataset.keywords||'';
+      const title=card.querySelector('.gc-title').textContent.toLowerCase();
+      const catMatch=currentCat==='all'||cats.includes(currentCat);
+      const searchMatch=!q||(keys.includes(q)||title.includes(q));
+      if(catMatch&&searchMatch){card.style.display='';visible++;}
+      else{card.style.display='none';}
+    });
+    document.getElementById('no-result').style.display=visible===0?'block':'none';
+  }
+</script>
+</body>
+</html>
